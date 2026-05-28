@@ -96,6 +96,8 @@ in
     pkgs.gh
     pkgs.ghostty
     pkgs.git
+    pkgs.gnupg
+    pkgs.pinentry-curses
     pkgs.gtk3
     pkgs.gtk4
     pkgs.libsForQt5.qt5ct
@@ -103,6 +105,7 @@ in
     pkgs.imagemagick
     pkgs.jq
     pkgs.lazygit
+    pkgs.pass
     pkgs.mpv
     pkgs.neovim
     pkgs.nodejs
@@ -155,6 +158,14 @@ in
   home.sessionVariables = {
     GTK_THEME = "Tokyonight-Dark";
     QT_QPA_PLATFORMTHEME = "qt5ct";
+    PASSWORD_STORE_DIR = "${config.home.homeDirectory}/.password-store";
+  };
+
+  programs.gpg.enable = true;
+  services.gpg-agent = {
+    enable = true;
+    pinentry.package = pkgs.pinentry-curses;
+    enableSshSupport = true;
   };
 
   systemd.user.services.nirinit = {
