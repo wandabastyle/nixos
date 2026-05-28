@@ -51,15 +51,6 @@ For Wi-Fi:
 nmtui
 ```
 
-### During Install: Transfer Keys
-
-After booting the ISO and setting up networking, from your current system copy the keys:
-
-```sh
-# Replace <iso-ip> with the IP shown by 'ip addr' on the ISO
-scp ~/secret-keys.asc ~/gpg-ownertrust.txt ~/ssh-backup/* nixos@<iso-ip>:/home/nixos/
-```
-
 ### Optional: Continue Over SSH
 
 Set a temporary root password for SSH:
@@ -126,26 +117,6 @@ passwd kanashi
 exit
 ```
 
-### Import Keys (Before Reboot)
-
-After `nixos-install`, before rebooting, `nixos-enter` into the install and import your keys:
-
-```sh
-sudo nixos-enter
-
-# Import GPG keys
-su - kanashi -c 'gpg --import /home/nixos/secret-keys.asc'
-su - kanashi -c 'gpg --import-ownertrust /home/nixos/gpg-ownertrust.txt'
-
-# Restore SSH keys
-su - kanashi -c 'mkdir -p ~/.ssh && chmod 700 ~/.ssh'
-cp /home/nixos/id_* /home/kanashi/.ssh/
-su - kanashi -c 'chmod 600 ~/.ssh/id_*'
-chown -R kanashi:users /home/kanashi/.ssh
-
-exit
-```
-
 ### Reboot
 
 ```sh
@@ -155,6 +126,33 @@ reboot
 ## After First Boot
 
 Log in through SDDM as `kanashi`.
+
+### Import Keys
+
+Import your GPG and SSH keys after first boot:
+
+```sh
+# Import GPG keys
+gpg --import ~/secret-keys.asc
+gpg --import-ownertrust ~/gpg-ownertrust.txt
+
+# Restore SSH keys
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+cp ~/ssh-backup/id_* ~/.ssh/
+chmod 600 ~/.ssh/id_*
+```
+
+### Clone Password Store
+
+Once SSH and GPG are ready, clone your password store:
+
+```sh
+# Replace with your actual repository URL
+git clone git@github.com:your-user/pass-store ~/.password-store
+```
+
+### Setup Dotfiles Repo
 
 Make sure this repo exists at the canonical path:
 
@@ -173,15 +171,6 @@ Rebuild with:
 
 ```sh
 sudo nixos-rebuild switch --flake ~/dotfiles#loq15arp9
-```
-
-### Clone Password Store
-
-Once SSH and GPG are ready, clone your password store:
-
-```sh
-# Replace with your actual repository URL
-git clone git@github.com:your-user/pass-store ~/.password-store
 ```
 
 ## Dotfiles
