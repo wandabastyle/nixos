@@ -127,9 +127,16 @@ reboot
 
 Log in through SDDM as `kanashi`.
 
-### Import Keys
+### Transfer Keys
 
-Import your GPG and SSH keys after first boot:
+From your old system, copy the exported keys to the new NixOS machine:
+
+```sh
+# Replace <new-ip> with the IP of your NixOS machine (check with 'ip addr' on NixOS)
+scp ~/secret-keys.asc ~/gpg-ownertrust.txt ~/ssh-backup/* kanashi@<new-ip>:~/
+```
+
+Then on the new NixOS system, import them:
 
 ```sh
 # Import GPG keys
@@ -139,7 +146,7 @@ gpg --import-ownertrust ~/gpg-ownertrust.txt
 # Restore SSH keys
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
-cp ~/ssh-backup/id_* ~/.ssh/
+cp ~/id_* ~/.ssh/
 chmod 600 ~/.ssh/id_*
 ```
 
