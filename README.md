@@ -27,6 +27,59 @@ Check `lsblk` before running `disko`.
 - Home config: Home Manager
 - Dotfiles: mutable symlinks from `~/dotfiles/.config/*`
 
+## Pre-Install: Key Migration
+
+Export GPG and SSH keys from your current system before installing.
+
+### Export keys
+
+On your current system:
+
+```sh
+# Export GPG secret keys (encrypted output)
+gpg --export-secret-keys --armor > ~/secret-keys.asc
+gpg --export-ownertrust > ~/gpg-ownertrust.txt
+
+# Backup SSH keys (private + public)
+mkdir -p ~/ssh-backup
+cp ~/.ssh/id_* ~/ssh-backup/ 2>/dev/null || echo "No SSH keys in ~/.ssh"
+```
+
+### Transfer to NixOS ISO
+
+Boot the NixOS installer ISO and set up networking. Then from your current system:
+
+```sh
+# Replace <iso-ip> with the IP shown by 'ip addr' on the ISO
+scp ~/secret-keys.asc ~/gpg-ownertrust.txt ~/ssh-backup/* nixos@<iso-ip>:/home/nixos/
+```
+
+### Import after NixOS install
+
+After `nixos-install` and `nixos-enter`, before rebooting:
+
+```sh
+# Import GPG keys
+sudo -u kanashi gpg --import /home/nixos/secret-keys.asc
+sudo -u kanashi gpg --import-ownertrust /home/nixos/gpg-ownertrust.txt
+
+# Restore SSH keys
+sudo -u kanashi mkdir -p /home/kanashi/.ssh
+sudo -u kanashi chmod 700 /home/kanashi/.ssh
+sudo cp /home/nixos/id_* /home/kanashi/.ssh/
+sudo -u kanashi chmod 600 /home/kanashi/.ssh/id_*
+sudo chown -R kanashi:users /home/kanashi/.ssh
+```
+
+### Clone password store
+
+Once GPG and SSH are ready, clone your existing password store:
+
+```sh
+# Replace with your actual repository URL
+sudo -u kanashi git clone git@github.com:your-user/pass-store /home/kanashi/.password-store
+```
+
 ## Install
 
 Boot a NixOS installer ISO and connect networking.
