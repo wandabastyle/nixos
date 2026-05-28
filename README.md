@@ -27,13 +27,9 @@ Check `lsblk` before running `disko`.
 - Home config: Home Manager
 - Dotfiles: mutable symlinks from `~/dotfiles/.config/*`
 
-## Pre-Install: Key Migration
+## Pre-Install: Export Keys
 
-Export GPG and SSH keys from your current system before installing.
-
-### Export keys
-
-On your current system:
+Before booting the NixOS ISO, export GPG and SSH keys on your current system:
 
 ```sh
 # Export GPG secret keys (encrypted output)
@@ -45,41 +41,6 @@ mkdir -p ~/ssh-backup
 cp ~/.ssh/id_* ~/ssh-backup/ 2>/dev/null || echo "No SSH keys in ~/.ssh"
 ```
 
-### Transfer to NixOS ISO
-
-Boot the NixOS installer ISO and set up networking. Then from your current system:
-
-```sh
-# Replace <iso-ip> with the IP shown by 'ip addr' on the ISO
-scp ~/secret-keys.asc ~/gpg-ownertrust.txt ~/ssh-backup/* nixos@<iso-ip>:/home/nixos/
-```
-
-### Import after NixOS install
-
-After `nixos-install` and `nixos-enter`, before rebooting:
-
-```sh
-# Import GPG keys
-sudo -u kanashi gpg --import /home/nixos/secret-keys.asc
-sudo -u kanashi gpg --import-ownertrust /home/nixos/gpg-ownertrust.txt
-
-# Restore SSH keys
-sudo -u kanashi mkdir -p /home/kanashi/.ssh
-sudo -u kanashi chmod 700 /home/kanashi/.ssh
-sudo cp /home/nixos/id_* /home/kanashi/.ssh/
-sudo -u kanashi chmod 600 /home/kanashi/.ssh/id_*
-sudo chown -R kanashi:users /home/kanashi/.ssh
-```
-
-### Clone password store
-
-Once GPG and SSH are ready, clone your existing password store:
-
-```sh
-# Replace with your actual repository URL
-sudo -u kanashi git clone git@github.com:your-user/pass-store /home/kanashi/.password-store
-```
-
 ## Install
 
 Boot a NixOS installer ISO and connect networking.
@@ -88,6 +49,15 @@ For Wi-Fi:
 
 ```sh
 nmtui
+```
+
+### During Install: Transfer Keys
+
+After booting the ISO and setting up networking, from your current system copy the keys:
+
+```sh
+# Replace <iso-ip> with the IP shown by 'ip addr' on the ISO
+scp ~/secret-keys.asc ~/gpg-ownertrust.txt ~/ssh-backup/* nixos@<iso-ip>:/home/nixos/
 ```
 
 ### Optional: Continue Over SSH
@@ -156,6 +126,26 @@ passwd kanashi
 exit
 ```
 
+### Import Keys (Before Reboot)
+
+After `nixos-install`, before rebooting, `nixos-enter` into the install and import your keys:
+
+```sh
+sudo nixos-enter
+
+# Import GPG keys
+su - kanashi -c 'gpg --import /home/nixos/secret-keys.asc'
+su - kanashi -c 'gpg --import-ownertrust /home/nixos/gpg-ownertrust.txt'
+
+# Restore SSH keys
+su - kanashi -c 'mkdir -p ~/.ssh && chmod 700 ~/.ssh'
+cp /home/nixos/id_* /home/kanashi/.ssh/
+su - kanashi -c 'chmod 600 ~/.ssh/id_*'
+chown -R kanashi:users /home/kanashi/.ssh
+
+exit
+```
+
 ### Reboot
 
 ```sh
@@ -183,6 +173,15 @@ Rebuild with:
 
 ```sh
 sudo nixos-rebuild switch --flake ~/dotfiles#loq15arp9
+```
+
+### Clone Password Store
+
+Once SSH and GPG are ready, clone your password store:
+
+```sh
+# Replace with your actual repository URL
+git clone git@github.com:your-user/pass-store ~/.password-store
 ```
 
 ## Dotfiles
