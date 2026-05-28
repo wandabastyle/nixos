@@ -10,20 +10,25 @@
 let
   dotfilesRepo = "${config.home.homeDirectory}/dotfiles";
 
-  # Explicit list of config directories to symlink via mkOutOfStoreSymlink.
-  # These are tracked as git submodules; Nix cannot see them dynamically,
-  # so we enumerate them here. (systemd/ is excluded and recreated declaratively.)
-  linkableConfigDirs = [
-    "fish"
-    "ghostty"
-    "lazygit"
-    "niri"
-    "nirinit"
-    "noctalia"
-    "nvim"
-    "rofi"
-    "tmux"
-  ];
+  # Extract config directory names from .gitmodules submodules under .config/
+  # Example: [submodule ".config/fish"] -> "fish"
+  gitmodulesContent = builtins.readFile ../.gitmodules;
+  submoduleParts = lib.splitString "[submodule \".config/" gitmodulesContent;
+  allConfigDirs = lib.filter (n: n != null && n != "") (
+    map (
+      part:
+      let
+        # Find closing quote to extract the name
+        quoteIdx = lib.findFirst (i: builtins.substring i 1 part == "\"") (lib.stringLength part) (
+          lib.genList (i: i) (lib.stringLength part)
+        );
+      in
+      if quoteIdx == lib.stringLength part then null else builtins.substring 0 quoteIdx part
+    ) (lib.tail submoduleParts) # Skip first element (content before first submodule)
+  );
+
+  # Filter out systemd (managed declaratively by Home Manager) and keep only valid names
+  linkableConfigDirs = lib.filter (name: name != "systemd") allConfigDirs;
 
   mkConfigLink = name: {
     inherit name;
