@@ -25,7 +25,7 @@ Check `lsblk` before running `disko`.
 - Session: Niri Wayland session
 - GPU: proprietary NVIDIA driver for RTX 4060 Laptop GPU
 - Home config: Home Manager
-- Dotfiles: mutable symlinks from `~/nixos/dotfiles/.config/*`
+- Dotfiles: mutable symlinks from `~/dotfiles/.config/*`
 
 ## Install
 
@@ -70,8 +70,8 @@ Commands below use `sudo`. If you are connected as `root` over SSH, omit `sudo`.
 ### Clone Repo
 
 ```sh
-git clone --recurse-submodules <repo-url> ~/nixos
-cd ~/nixos
+git clone --recurse-submodules <repo-url> ~/dotfiles
+cd ~/dotfiles
 ```
 
 ### Confirm Target Disk
@@ -116,20 +116,20 @@ Log in through SDDM as `kanashi`.
 Make sure this repo exists at the canonical path:
 
 ```sh
-~/nixos
+~/dotfiles
 ```
 
 If needed, clone or update submodules:
 
 ```sh
-cd ~/nixos
+cd ~/dotfiles
 git submodule update --init --recursive
 ```
 
 Rebuild with:
 
 ```sh
-sudo nixos-rebuild switch --flake ~/nixos#loq15arp9
+sudo nixos-rebuild switch --flake ~/dotfiles#loq15arp9
 ```
 
 ## Dotfiles
@@ -137,13 +137,13 @@ sudo nixos-rebuild switch --flake ~/nixos#loq15arp9
 Home Manager dynamically links every directory under:
 
 ```sh
-~/nixos/dotfiles/.config/*
+~/dotfiles/.config/*
 ```
 
 It intentionally excludes:
 
 ```sh
-~/nixos/dotfiles/.config/systemd
+~/dotfiles/.config/systemd
 ```
 
 User systemd services are declared in `home/kanashi.nix` instead of symlinked.

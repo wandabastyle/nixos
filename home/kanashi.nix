@@ -8,8 +8,8 @@
 }:
 
 let
-  nixosRepo = "${config.home.homeDirectory}/nixos";
-  dotConfigDir = ../dotfiles/.config;
+  dotfilesRepo = "${config.home.homeDirectory}/dotfiles";
+  dotConfigDir = ../.config;
   dotConfigEntries = builtins.readDir dotConfigDir;
   linkableConfigDirs = lib.filterAttrs (
     name: type: type == "directory" && name != "systemd"
@@ -17,18 +17,20 @@ let
 
   mkConfigLink = name: _type: {
     inherit name;
-    value.source = config.lib.file.mkOutOfStoreSymlink "${nixosRepo}/dotfiles/.config/${name}";
+    value.source = config.lib.file.mkOutOfStoreSymlink "${dotfilesRepo}/.config/${name}";
   };
 
   system = pkgs.stdenv.hostPlatform.system;
-  noctaliaShell = inputs.noctalia.packages.${system}.default;
+  noctaliaShell = pkgs.callPackage ../pkgs/noctalia-shell-custom {
+    noctaliaShell = inputs.noctalia.packages.${system}.default;
+  };
   nirinit = inputs.nirinit.packages.${system}.default;
   ollamaPackage = pkgs.ollama-cuda;
 
   updatesCounter = pkgs.writeShellScript "updates-counter" ''
     set -u
 
-    repo="$HOME/nixos"
+    repo="$HOME/dotfiles"
     cache="$HOME/.cache/updates-count"
     tmp="$(${pkgs.coreutils}/bin/mktemp -d)"
     cleanup() {
@@ -95,7 +97,6 @@ in
     pkgs.pcmanfm
     pkgs.playerctl
     pkgs.python3
-    pkgs.qutebrowser
     pkgs.ripgrep
     pkgs.rofi
     pkgs.rustup

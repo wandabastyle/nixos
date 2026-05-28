@@ -1,0 +1,30 @@
+[submodule "wallpaper"]
+	path = wallpaper
+	url = git@github.com:wandabastyle/wallpaper.git
+[submodule ".config/niri"]
+	path = .config/niri
+	url = git@github.com:wandabastyle/niri.git
+[submodule ".config/ghostty"]
+	path = .config/ghostty
+	url = git@github.com:wandabastyle/ghostty.git
+[submodule ".config/fish"]
+	path = .config/fish
+	url = git@github.com:wandabastyle/fish.git
+[submodule ".config/nvim"]
+	path = .config/nvim
+	url = git@github.com:wandabastyle/nvim.git
+[submodule ".config/rofi"]
+	path = .config/rofi
+	url = git@github.com:wandabastyle/rofi.git
+[submodule ".config/lazygit"]
+	path = .config/lazygit
+	url = git@github.com:wandabastyle/lazygit.git
+[submodule ".config/noctalia"]
+	path = .config/noctalia
+	url = git@github.com:wandabastyle/noctalia.git
+[submodule ".config/tmux"]
+	path = .config/tmux
+	url = git@github.com:wandabastyle/tmux.git
+[submodule ".config/nirinit"]
+	path = .config/nirinit
+	url = git@github.com:wandabastyle/nirinit.git
