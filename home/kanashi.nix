@@ -9,13 +9,23 @@
 
 let
   dotfilesRepo = "${config.home.homeDirectory}/dotfiles";
-  dotConfigDir = ../.config;
-  dotConfigEntries = builtins.readDir dotConfigDir;
-  linkableConfigDirs = lib.filterAttrs (
-    name: type: type == "directory" && name != "systemd"
-  ) dotConfigEntries;
 
-  mkConfigLink = name: _type: {
+  # Explicit list of config directories to symlink via mkOutOfStoreSymlink.
+  # These are tracked as git submodules; Nix cannot see them dynamically,
+  # so we enumerate them here. (systemd/ is excluded and recreated declaratively.)
+  linkableConfigDirs = [
+    "fish"
+    "ghostty"
+    "lazygit"
+    "niri"
+    "nirinit"
+    "noctalia"
+    "nvim"
+    "rofi"
+    "tmux"
+  ];
+
+  mkConfigLink = name: {
     inherit name;
     value.source = config.lib.file.mkOutOfStoreSymlink "${dotfilesRepo}/.config/${name}";
   };
@@ -115,7 +125,7 @@ in
     pkgs.pkg-config
   ];
 
-  xdg.configFile = lib.mapAttrs' mkConfigLink linkableConfigDirs;
+  xdg.configFile = lib.listToAttrs (map mkConfigLink linkableConfigDirs);
 
   gtk = {
     enable = true;
