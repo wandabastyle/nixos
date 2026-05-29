@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+
+# Transfer keys from old system to new NixOS machine
+# Run this on your current (old) system after NixOS is installed and booted
+
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Configuration
+BACKUP_DIR="$HOME"
+SSH_BACKUP_DIR="$HOME/ssh-backup"
+GPG_ASC="$BACKUP_DIR/secret-keys.asc"
+GPG_TRUST="$BACKUP_DIR/gpg-ownertrust.txt"
+
+# Ask for IP
+echo -e "${YELLOW}Transfer keys to new NixOS machine${NC}"
+echo ""
+read -rp "Enter the IP address of your new NixOS machine: " NIXOS_IP
+
+if [[ -z "$NIXOS_IP" ]]; then
+    echo -e "${RED}Error: IP address is required${NC}"
+    exit 1
+fi
+
+echo ""
+echo -e "${GREEN}Target: kanashi@$NIXOS_IP${NC}"
+echo ""
+
+# Check if backup files exist locally
+missing_files=false
+
+if [[ ! -f "$GPG_ASC" ]]; then
+    echo -e "${RED}Error: GPG key backup not found: $GPG_ASC${NC}"
+    echo "Run 'gpg --export-secret-keys --armor > ~/secret-keys.asc' first"
+    missing_files=true
+fi
+
+if [[ ! -f "$GPG_TRUST" ]]; then
+    echo -e "${RED}Error: GPG ownertrust not found: $GPG_TRUST${NC}"
+    echo "Run 'gpg --export-ownertrust > ~/gpg-ownertrust.txt' first"
+    missing_files=true
+fi
+
+if [[ ! -d "$SSH_BACKUP_DIR" ]]; then
+    echo -e "${YELLOW}Warning: SSH backup directory not found: $SSH_BACKUP_DIR${NC}"
+    echo "SSH config may already be on the new system from install phase"
+    echo ""
+fi
+
+if [[ "$missing_files" == true ]]; then
+    exit 1
+fi
+
+# Test SSH connection first
+echo -e "${YELLOW}Testing SSH connection...${NC}"
+if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -q "kanashi@$NIXOS_IP" exit 2>/dev/null; then
+    echo -e "${RED}Error: Cannot connect to kanashi@$NIXOS_IP${NC}"
+    echo "Make sure:"
+    echo "  1. The NixOS machine is running and on the network"
+    echo "  2. SSH is enabled (systemctl status sshd)"
+    echo "  3. Your SSH key is authorized on the new machine"
+    exit 1
+fi
+
+echo -e "${GREEN}SSH connection successful!${NC}"
+echo ""
+
+# Transfer SSH backup if it exists
+if [[ -d "$SSH_BACKUP_DIR" ]]; then
+    echo -e "${YELLOW}Transferring SSH configuration...${NC}"
+    scp -r "$SSH_BACKUP_DIR" "kanashi@$NIXOS_IP:~/"
+    
+    # Setup SSH directory on remote
+    echo -e "${YELLOW}Setting up SSH directory on remote...${NC}"
+    ssh "kanashi@$NIXOS_IP" << 'REMOTE_CMDS'
+        if [[ -d ~/ssh-backup ]]; then
+            mv ~/ssh-backup ~/.ssh
+            chmod 700 ~/.ssh
+            chmod 600 ~/.ssh/id_* 2>/dev/null || true
+            echo "SSH config restored successfully"
+        fi
+REMOTE_CMDS
+    echo -e "${GREEN}SSH configuration transferred!${NC}"
+    echo ""
+fi
+
+# Transfer GPG keys
+echo -e "${YELLOW}Transferring GPG keys...${NC}"
+scp "$GPG_ASC" "$GPG_TRUST" "kanashi@$NIXOS_IP:~/"
+
+# Import GPG keys on remote
+echo ""
+echo -e "${YELLOW}Importing GPG keys on remote machine...${NC}"
+ssh "kanashi@$NIXOS_IP" << 'REMOTE_CMDS'
+    echo "Importing GPG secret keys..."
+    gpg --import ~/secret-keys.asc
+    
+    echo "Importing GPG ownertrust..."
+    gpg --import-ownertrust ~/gpg-ownertrust.txt
+    
+    echo "Configuring git credential helper..."
+    git config --global credential.helper store
+    
+    echo "Cleaning up transferred files..."
+    rm -f ~/secret-keys.asc ~/gpg-ownertrust.txt
+    
+    echo "GPG setup complete!"
+REMOTE_CMDS
+
+echo ""
+echo -e "${GREEN}✓ All keys transferred and configured successfully!${NC}"
+echo ""
+echo "Next steps:"
+echo "  1. Clone your password store:"
+echo "     git clone git@github.com:your-user/pass-store ~/.password-store"
+echo ""
+echo "  2. Clone/update dotfiles submodules if needed:"
+echo "     cd ~/dotfiles"
+echo "     git submodule update --init --recursive"
+echo ""

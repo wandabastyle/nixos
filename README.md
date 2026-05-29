@@ -145,24 +145,27 @@ reboot
 
 Log in through SDDM as `kanashi`.
 
-### Transfer GPG Keys
+### Transfer Keys (Automated)
 
-From your old system, copy the GPG keys to the new NixOS machine:
+From your old system, use the provided script to transfer all keys:
 
 ```sh
-# Replace <new-ip> with the IP of your NixOS machine (check with 'ip addr' on NixOS)
-scp ~/secret-keys.asc ~/gpg-ownertrust.txt kanashi@<new-ip>:~/
+# Run from the repo directory on your old machine
+./transfer-keys.sh
 ```
 
-Then on the new NixOS system, import them:
+This will:
+- Ask for the new NixOS machine's IP
+- Transfer SSH configuration (if not already done during install)
+- Transfer and import GPG keys
+- Configure git credential helper
+
+Or manually:
 
 ```sh
-# Import GPG keys
-gpg --import ~/secret-keys.asc
-gpg --import-ownertrust ~/gpg-ownertrust.txt
-
-# Configure git credential helper for this user too
-git config --global credential.helper store
+# Transfer GPG keys only (SSH should already be configured)
+scp ~/secret-keys.asc ~/gpg-ownertrust.txt kanashi@<new-ip>:~/
+ssh kanashi@<new-ip> 'gpg --import ~/secret-keys.asc && gpg --import-ownertrust ~/gpg-ownertrust.txt'
 ```
 
 ### Clone Password Store
