@@ -36,9 +36,9 @@ Before booting the NixOS ISO, export GPG and SSH keys on your current system:
 gpg --export-secret-keys --armor > ~/secret-keys.asc
 gpg --export-ownertrust > ~/gpg-ownertrust.txt
 
-# Backup SSH keys (private + public)
+# Backup entire SSH directory (keys, config, known_hosts)
 mkdir -p ~/ssh-backup
-cp ~/.ssh/id_* ~/ssh-backup/ 2>/dev/null || echo "No SSH keys in ~/.ssh"
+cp -r ~/.ssh/* ~/ssh-backup/ 2>/dev/null || echo "No SSH directory found"
 ```
 
 ## Install
@@ -81,10 +81,28 @@ Continue the remaining install steps from the SSH session.
 
 Commands below use `sudo`. If you are connected as `root` over SSH, omit `sudo`.
 
+### Transfer SSH Config
+
+The submodules use SSH URLs. Copy your entire SSH directory (keys, config, known_hosts) to the installer:
+
+```sh
+# From your current system, copy SSH directory to the ISO
+# Replace <iso-ip> with the IP shown by 'ip addr' on the ISO
+scp -r ~/ssh-backup nixos@<iso-ip>:/home/nixos/
+
+# On the ISO, setup SSH
+mv /home/nixos/ssh-backup ~/.ssh
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_*
+
+# Configure git to cache credentials (useful if SSH key has passphrase)
+git config --global credential.helper store
+```
+
 ### Clone Repo
 
 ```sh
-git clone --recurse-submodules <repo-url> ~/dotfiles
+git clone --recurse-submodules https://github.com/wandabastyle/nixos ~/dotfiles
 cd ~/dotfiles
 ```
 
@@ -127,13 +145,13 @@ reboot
 
 Log in through SDDM as `kanashi`.
 
-### Transfer Keys
+### Transfer GPG Keys
 
-From your old system, copy the exported keys to the new NixOS machine:
+From your old system, copy the GPG keys to the new NixOS machine:
 
 ```sh
 # Replace <new-ip> with the IP of your NixOS machine (check with 'ip addr' on NixOS)
-scp ~/secret-keys.asc ~/gpg-ownertrust.txt ~/ssh-backup/* kanashi@<new-ip>:~/
+scp ~/secret-keys.asc ~/gpg-ownertrust.txt kanashi@<new-ip>:~/
 ```
 
 Then on the new NixOS system, import them:
@@ -143,11 +161,8 @@ Then on the new NixOS system, import them:
 gpg --import ~/secret-keys.asc
 gpg --import-ownertrust ~/gpg-ownertrust.txt
 
-# Restore SSH keys
-mkdir -p ~/.ssh
-chmod 700 ~/.ssh
-cp ~/id_* ~/.ssh/
-chmod 600 ~/.ssh/id_*
+# Configure git credential helper for this user too
+git config --global credential.helper store
 ```
 
 ### Clone Password Store
