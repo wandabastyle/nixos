@@ -50,10 +50,13 @@ A VM-optimized configuration is available at `nixosConfigurations.loq15arp9-vm` 
 - QEMU guest agent and SPICE vdagent enabled
 - Same Home Manager configuration
 
-To install in a VM:
+### Partition And Format (VM)
+
 ```sh
-# Run "Prep ISO" steps above first
-sudo nix run github:nix-community/disko -- \
+sudo nix --extra-experimental-features "nix-command flakes" \
+  --option extra-substituters "https://noctalia.cachix.org" \
+  --option trusted-public-keys "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4=" \
+  run github:nix-community/disko -- \
   --mode disko ./hosts/loq15arp9-vm/disko.nix
 
 sudo nixos-install --flake .#loq15arp9-vm
@@ -67,20 +70,6 @@ For Wi-Fi:
 
 ```sh
 nmtui
-```
-
-### Prep ISO
-
-Enable flakes and configure the Noctalia Cachix substituter:
-
-```sh
-# Enable flakes
-sudo mkdir -p /etc/nix
-echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf
-
-# Add Noctalia Cachix for faster builds
-echo "extra-substituters = https://noctalia.cachix.org" | sudo tee -a /etc/nix/nix.conf
-echo "trusted-public-keys = noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4=" | sudo tee -a /etc/nix/nix.conf
 ```
 
 ### Optional: Continue Over SSH
@@ -147,7 +136,10 @@ lsblk
 ### Partition And Format
 
 ```sh
-sudo nix run github:nix-community/disko -- \
+sudo nix --extra-experimental-features "nix-command flakes" \
+  --option extra-substituters "https://noctalia.cachix.org" \
+  --option trusted-public-keys "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4=" \
+  run github:nix-community/disko -- \
   --mode disko ./hosts/loq15arp9/disko.nix
 ```
 
