@@ -104,6 +104,26 @@ if [[ -d "$SSH_BACKUP_DIR" ]]; then
             echo "Git credential helper configured"
         fi
 REMOTE_CMDS
+    
+    # Start SSH agent on ISO to cache passphrase for submodule clones
+    if [[ "$SSH_USER" == "nixos" ]]; then
+        echo ""
+        echo -e "${YELLOW}Starting SSH agent for submodule authentication...${NC}"
+        ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
+            # Start agent if not running
+            if ! pgrep -u "$(whoami)" ssh-agent >/dev/null 2>&1; then
+                eval "$(ssh-agent -s)"
+            fi
+            # Add all keys
+            for key in ~/.ssh/id_*; do
+                [[ "$key" == *.pub ]] && continue
+                [[ -f "$key" ]] && ssh-add "$key" 2>/dev/null || true
+            done
+            echo "SSH agent started"
+            echo "NOTE: You may be prompted for your SSH key passphrase"
+REMOTE_CMDS
+    fi
+    
     echo -e "${GREEN}SSH configuration transferred!${NC}"
     echo ""
 fi
