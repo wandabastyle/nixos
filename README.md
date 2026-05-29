@@ -52,11 +52,11 @@ A VM-optimized configuration is available at `nixosConfigurations.loq15arp9-vm` 
 
 To install in a VM:
 ```sh
-# Replace loq15arp9 with loq15arp9-vm in the disko and install commands
-sudo nix --extra-experimental-features "nix-command flakes" --accept-flake-config run github:nix-community/disko -- \
+# Run "Prep ISO" steps above first
+sudo nix run github:nix-community/disko -- \
   --mode disko ./hosts/loq15arp9-vm/disko.nix
 
-sudo nixos-install --flake .#loq15arp9-vm --accept-flake-config
+sudo nixos-install --flake .#loq15arp9-vm
 ```
 
 ## Install
@@ -67,6 +67,20 @@ For Wi-Fi:
 
 ```sh
 nmtui
+```
+
+### Prep ISO
+
+Enable flakes and configure the Noctalia Cachix substituter:
+
+```sh
+# Enable flakes
+sudo mkdir -p /etc/nix
+echo "experimental-features = nix-command flakes" | sudo tee -a /etc/nix/nix.conf
+
+# Add Noctalia Cachix for faster builds
+echo "extra-substituters = https://noctalia.cachix.org" | sudo tee -a /etc/nix/nix.conf
+echo "trusted-public-keys = noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4=" | sudo tee -a /etc/nix/nix.conf
 ```
 
 ### Optional: Continue Over SSH
@@ -133,14 +147,14 @@ lsblk
 ### Partition And Format
 
 ```sh
-sudo nix --extra-experimental-features "nix-command flakes" --accept-flake-config run github:nix-community/disko -- \
+sudo nix run github:nix-community/disko -- \
   --mode disko ./hosts/loq15arp9/disko.nix
 ```
 
 ### Install NixOS
 
 ```sh
-sudo nixos-install --flake .#loq15arp9 --accept-flake-config
+sudo nixos-install --flake .#loq15arp9
 ```
 
 ### Set User Password
