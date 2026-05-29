@@ -34,28 +34,31 @@ echo -e "${GREEN}Target: ${SSH_USER}@${NIXOS_IP}${NC}"
 echo ""
 
 # Check if backup files exist locally
-missing_files=false
-
-if [[ ! -f "$GPG_ASC" ]]; then
-    echo -e "${RED}Error: GPG key backup not found: $GPG_ASC${NC}"
-    echo "Run 'gpg --export-secret-keys --armor > ~/secret-keys.asc' first"
-    missing_files=true
-fi
-
-if [[ ! -f "$GPG_TRUST" ]]; then
-    echo -e "${RED}Error: GPG ownertrust not found: $GPG_TRUST${NC}"
-    echo "Run 'gpg --export-ownertrust > ~/gpg-ownertrust.txt' first"
-    missing_files=true
-fi
-
 if [[ ! -d "$SSH_BACKUP_DIR" ]]; then
     echo -e "${YELLOW}Warning: SSH backup directory not found: $SSH_BACKUP_DIR${NC}"
     echo "SSH config may already be on the new system from install phase"
     echo ""
 fi
 
-if [[ "$missing_files" == true ]]; then
-    exit 1
+# Only require GPG files if not using ISO user
+if [[ "$SSH_USER" != "nixos" ]]; then
+    missing_gpg=false
+    
+    if [[ ! -f "$GPG_ASC" ]]; then
+        echo -e "${RED}Error: GPG key backup not found: $GPG_ASC${NC}"
+        echo "Run 'gpg --export-secret-keys --armor > ~/secret-keys.asc' first"
+        missing_gpg=true
+    fi
+    
+    if [[ ! -f "$GPG_TRUST" ]]; then
+        echo -e "${RED}Error: GPG ownertrust not found: $GPG_TRUST${NC}"
+        echo "Run 'gpg --export-ownertrust > ~/gpg-ownertrust.txt' first"
+        missing_gpg=true
+    fi
+    
+    if [[ "$missing_gpg" == true ]]; then
+        exit 1
+    fi
 fi
 
 # Ask for password upfront (if using password auth)
@@ -99,28 +102,33 @@ REMOTE_CMDS
     echo ""
 fi
 
-# Transfer GPG keys
-echo -e "${YELLOW}Transferring GPG keys...${NC}"
-scp "$GPG_ASC" "$GPG_TRUST" "${SSH_USER}@${NIXOS_IP}:~/"
-
-# Import GPG keys on remote
-echo ""
-echo -e "${YELLOW}Importing GPG keys on remote machine...${NC}"
-ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
-    echo "Importing GPG secret keys..."
-    gpg --import ~/secret-keys.asc
+# Transfer GPG keys (skip import for ISO user since GPG isn't available)
+if [[ "$SSH_USER" == "nixos" ]]; then
+    echo -e "${YELLOW}Skipping GPG import for ISO user (GPG not available on ISO)${NC}"
+    echo -e "${YELLOW}Transfer GPG keys after first boot using: ./transfer-keys.sh${NC}"
+else
+    echo -e "${YELLOW}Transferring GPG keys...${NC}"
+    scp "$GPG_ASC" "$GPG_TRUST" "${SSH_USER}@${NIXOS_IP}:~/"
     
-    echo "Importing GPG ownertrust..."
-    gpg --import-ownertrust ~/gpg-ownertrust.txt
-    
-    echo "Configuring git credential helper..."
-    git config --global credential.helper store
-    
-    echo "Cleaning up transferred files..."
-    rm -f ~/secret-keys.asc ~/gpg-ownertrust.txt
-    
-    echo "GPG setup complete!"
+    # Import GPG keys on remote
+    echo ""
+    echo -e "${YELLOW}Importing GPG keys on remote machine...${NC}"
+    ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
+        echo "Importing GPG secret keys..."
+        gpg --import ~/secret-keys.asc
+        
+        echo "Importing GPG ownertrust..."
+        gpg --import-ownertrust ~/gpg-ownertrust.txt
+        
+        echo "Configuring git credential helper..."
+        git config --global credential.helper store
+        
+        echo "Cleaning up transferred files..."
+        rm -f ~/secret-keys.asc ~/gpg-ownertrust.txt
+        
+        echo "GPG setup complete!"
 REMOTE_CMDS
+fi
 
 echo ""
 echo -e "${GREEN}✓ All keys transferred and configured successfully!${NC}"
