@@ -97,6 +97,12 @@ if [[ -d "$SSH_BACKUP_DIR" ]]; then
             chmod 600 ~/.ssh/id_* 2>/dev/null || true
             echo "SSH config restored successfully"
         fi
+        
+        # Configure git credential helper if git is available
+        if command -v git >/dev/null 2>&1; then
+            git config --global credential.helper store
+            echo "Git credential helper configured"
+        fi
 REMOTE_CMDS
     echo -e "${GREEN}SSH configuration transferred!${NC}"
     echo ""
