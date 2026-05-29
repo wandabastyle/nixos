@@ -41,6 +41,24 @@ mkdir -p ~/ssh-backup
 cp -r ~/.ssh/* ~/ssh-backup/ 2>/dev/null || echo "No SSH directory found"
 ```
 
+## VM Variant
+
+A VM-optimized configuration is available at `nixosConfigurations.loq15arp9-vm` with:
+- Hostname: `loq15arp9-vm` (prevents network conflicts)
+- Disk: `/dev/vda` (VirtIO)
+- GPU: `modesetting` driver instead of NVIDIA
+- QEMU guest agent and SPICE vdagent enabled
+- Same Home Manager configuration
+
+To install in a VM:
+```sh
+# Replace loq15arp9 with loq15arp9-vm in the disko and install commands
+sudo nix --extra-experimental-features "nix-command flakes" --accept-flake-config run github:nix-community/disko -- \
+  --mode disko ./hosts/loq15arp9-vm/disko.nix
+
+sudo nixos-install --flake .#loq15arp9-vm --accept-flake-config
+```
+
 ## Install
 
 Boot a NixOS installer ISO and connect networking.

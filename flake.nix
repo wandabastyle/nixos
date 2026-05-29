@@ -69,5 +69,26 @@
           }
         ];
       };
+
+      # VM variant with different hostname and no NVIDIA
+      nixosConfigurations.loq15arp9-vm = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = {
+          inherit inputs unstablePkgs;
+        };
+        modules = [
+          disko.nixosModules.disko
+          home-manager.nixosModules.home-manager
+          ./hosts/loq15arp9-vm/configuration.nix
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = {
+              inherit inputs unstablePkgs;
+            };
+            home-manager.users.kanashi = import ./home/kanashi.nix;
+          }
+        ];
+      };
     };
 }
