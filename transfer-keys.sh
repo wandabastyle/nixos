@@ -58,19 +58,27 @@ if [[ "$missing_files" == true ]]; then
     exit 1
 fi
 
-# Test SSH connection first
-echo -e "${YELLOW}Testing SSH connection...${NC}"
-if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -q "${SSH_USER}@${NIXOS_IP}" exit 2>/dev/null; then
-    echo -e "${RED}Error: Cannot connect to ${SSH_USER}@${NIXOS_IP}${NC}"
-    echo "Make sure:"
-    echo "  1. The NixOS machine is running and on the network"
-    echo "  2. SSH is enabled (systemctl status sshd)"
-    echo "  3. Your SSH key is authorized on the new machine"
-    exit 1
+# Ask for password upfront (if using password auth)
+if [[ "$SSH_USER" == "nixos" ]]; then
+    echo -e "${YELLOW}Note: Using password authentication for ISO user 'nixos'${NC}"
+    echo -e "${YELLOW}You'll be prompted for the password during each SSH operation${NC}"
+    echo ""
 fi
 
-echo -e "${GREEN}SSH connection successful!${NC}"
-echo ""
+# Skip connection test for password auth to avoid multiple prompts
+if [[ "$SSH_USER" != "nixos" ]]; then
+    echo -e "${YELLOW}Testing SSH key connection...${NC}"
+    if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -q "${SSH_USER}@${NIXOS_IP}" exit 2>/dev/null; then
+        echo -e "${RED}Error: Cannot connect to ${SSH_USER}@${NIXOS_IP} via SSH key${NC}"
+        echo "Make sure:"
+        echo "  1. The NixOS machine is running and on the network"
+        echo "  2. SSH is enabled (systemctl status sshd)"
+        echo "  3. Your SSH key is authorized on the new machine"
+        exit 1
+    fi
+    echo -e "${GREEN}SSH connection successful!${NC}"
+    echo ""
+fi
 
 # Transfer SSH backup if it exists
 if [[ -d "$SSH_BACKUP_DIR" ]]; then
