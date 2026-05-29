@@ -6,6 +6,9 @@
   ...
 }:
 
+let
+  sddmTokyoNight = pkgs.callPackage ../../pkgs/sddm-tokyo-night { };
+in
 {
   imports = [
     ../loq15arp9/hardware-configuration.nix
@@ -118,34 +121,30 @@
     QT_QPA_PLATFORMTHEME = "qt5ct";
   };
 
-  let
-    sddmTokyoNight = pkgs.callPackage ../../pkgs/sddm-tokyo-night { };
-  in {
-    environment.systemPackages = with pkgs; [
-      sddmTokyoNight
-      alsa-utils
-      git
-      vim
-      wget
-      curl
-      gsettings-desktop-schemas
-      hicolor-icon-theme
-      pciutils
-      usbutils
-      wl-clipboard
-      xdg-utils
-      jetbrains-mono
-      nerd-fonts.jetbrains-mono
-    ];
+  environment.systemPackages = with pkgs; [
+    sddmTokyoNight
+    alsa-utils
+    git
+    vim
+    wget
+    curl
+    gsettings-desktop-schemas
+    hicolor-icon-theme
+    pciutils
+    usbutils
+    wl-clipboard
+    xdg-utils
+    jetbrains-mono
+    nerd-fonts.jetbrains-mono
+  ];
 
-    fonts.packages = with pkgs; [
-      jetbrains-mono
-      nerd-fonts.jetbrains-mono
-      noto-fonts
-      noto-fonts-cjk-sans
-      noto-fonts-color-emoji
-    ];
-  };
+  fonts.packages = with pkgs; [
+    jetbrains-mono
+    nerd-fonts.jetbrains-mono
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-color-emoji
+  ];
 
   system.stateVersion = "25.11";
 }
