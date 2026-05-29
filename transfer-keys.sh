@@ -17,10 +17,12 @@ SSH_BACKUP_DIR="$HOME/ssh-backup"
 GPG_ASC="$BACKUP_DIR/secret-keys.asc"
 GPG_TRUST="$BACKUP_DIR/gpg-ownertrust.txt"
 
-# Ask for IP
+# Ask for IP and user
 echo -e "${YELLOW}Transfer keys to new NixOS machine${NC}"
 echo ""
 read -rp "Enter the IP address of your new NixOS machine: " NIXOS_IP
+read -rp "Enter the SSH username [kanashi]: " SSH_USER
+SSH_USER=${SSH_USER:-kanashi}
 
 if [[ -z "$NIXOS_IP" ]]; then
     echo -e "${RED}Error: IP address is required${NC}"
@@ -28,7 +30,7 @@ if [[ -z "$NIXOS_IP" ]]; then
 fi
 
 echo ""
-echo -e "${GREEN}Target: kanashi@$NIXOS_IP${NC}"
+echo -e "${GREEN}Target: ${SSH_USER}@${NIXOS_IP}${NC}"
 echo ""
 
 # Check if backup files exist locally
@@ -58,8 +60,8 @@ fi
 
 # Test SSH connection first
 echo -e "${YELLOW}Testing SSH connection...${NC}"
-if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -q "kanashi@$NIXOS_IP" exit 2>/dev/null; then
-    echo -e "${RED}Error: Cannot connect to kanashi@$NIXOS_IP${NC}"
+if ! ssh -o ConnectTimeout=5 -o BatchMode=yes -q "${SSH_USER}@${NIXOS_IP}" exit 2>/dev/null; then
+    echo -e "${RED}Error: Cannot connect to ${SSH_USER}@${NIXOS_IP}${NC}"
     echo "Make sure:"
     echo "  1. The NixOS machine is running and on the network"
     echo "  2. SSH is enabled (systemctl status sshd)"
@@ -73,11 +75,11 @@ echo ""
 # Transfer SSH backup if it exists
 if [[ -d "$SSH_BACKUP_DIR" ]]; then
     echo -e "${YELLOW}Transferring SSH configuration...${NC}"
-    scp -r "$SSH_BACKUP_DIR" "kanashi@$NIXOS_IP:~/"
+    scp -r "$SSH_BACKUP_DIR" "${SSH_USER}@${NIXOS_IP}:~/"
     
     # Setup SSH directory on remote
     echo -e "${YELLOW}Setting up SSH directory on remote...${NC}"
-    ssh "kanashi@$NIXOS_IP" << 'REMOTE_CMDS'
+    ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
         if [[ -d ~/ssh-backup ]]; then
             mv ~/ssh-backup ~/.ssh
             chmod 700 ~/.ssh
@@ -91,12 +93,12 @@ fi
 
 # Transfer GPG keys
 echo -e "${YELLOW}Transferring GPG keys...${NC}"
-scp "$GPG_ASC" "$GPG_TRUST" "kanashi@$NIXOS_IP:~/"
+scp "$GPG_ASC" "$GPG_TRUST" "${SSH_USER}@${NIXOS_IP}:~/"
 
 # Import GPG keys on remote
 echo ""
 echo -e "${YELLOW}Importing GPG keys on remote machine...${NC}"
-ssh "kanashi@$NIXOS_IP" << 'REMOTE_CMDS'
+ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
     echo "Importing GPG secret keys..."
     gpg --import ~/secret-keys.asc
     
