@@ -65,6 +65,7 @@
             home-manager.extraSpecialArgs = {
               inherit inputs unstablePkgs;
             };
+            home-manager.backupFileExtension = "backup";
             home-manager.users.kanashi = import ./home/kanashi.nix;
           }
         ];
@@ -86,6 +87,7 @@
             home-manager.extraSpecialArgs = {
               inherit inputs unstablePkgs;
             };
+            home-manager.backupFileExtension = "backup";
             home-manager.users.kanashi = import ./home/kanashi.nix;
           }
         ];
