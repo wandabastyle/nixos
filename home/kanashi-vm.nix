@@ -18,5 +18,6 @@
     ./modules/base.nix
     ./modules/dotfiles.nix
     ./modules/noctalia.nix
+    ./modules/niri-vm.nix
   ];
 }
