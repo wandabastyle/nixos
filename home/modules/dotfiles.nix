@@ -22,7 +22,8 @@ let
     ) (lib.tail submoduleParts)
   );
 
-  linkableConfigDirs = lib.filter (name: name != "systemd") allConfigDirs;
+  # Filter out systemd and niri (niri is handled separately by VM config)
+  linkableConfigDirs = lib.filter (name: name != "systemd" && name != "niri") allConfigDirs;
 
   mkConfigLink = name: {
     inherit name;
