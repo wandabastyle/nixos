@@ -28,3 +28,6 @@
 [submodule ".config/nirinit"]
 	path = .config/nirinit
 	url = git@github.com:wandabastyle/nirinit.git
+[submodule "assets/sddm/tokyo-night-sddm"]
+	path = assets/sddm/tokyo-night-sddm
+	url = https://github.com/Arjun31415/tokyo-night-sddm-qt6.git

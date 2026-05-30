@@ -71,7 +71,6 @@ in
     enable = true;
     wayland.enable = true;
     theme = "tokyo-night-sddm";
-    extraPackages = [ pkgs.kdePackages.qt5compat ];
   };
 
   services.pipewire = {

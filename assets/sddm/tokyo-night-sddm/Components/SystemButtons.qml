@@ -49,6 +49,7 @@ RowLayout {
             icon.source: modelData ? Qt.resolvedUrl("../Assets/" + modelData[0] + ".svgz") : ""
             icon.height: 2 * Math.round((root.font.pointSize * 3) / 2)
             icon.width: 2 * Math.round((root.font.pointSize * 3) / 2)
+            icon.color: palette.buttonText 
             display: AbstractButton.TextUnderIcon
             visible: config.ForceHideSystemButtons != "true" && modelData[2]
             hoverEnabled: true
@@ -87,11 +88,11 @@ RowLayout {
                     when: parent.children[index].hovered
                     PropertyChanges {
                         target: parent.children[index]
-                        palette.buttonText: Qt.lighter(root.palette.highlight, 1.1)
+                        palette.buttonText: Qt.lighter(root.palette.highlight, 1.2)
                     }
                     PropertyChanges {
                         target: parent.children[index].background
-                        border.color: Qt.lighter(root.palette.highlight, 1.1)
+                        border.color: Qt.lighter(root.palette.highlight, 1.2)
                     }
                 },
                 State {
