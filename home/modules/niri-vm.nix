@@ -5,23 +5,8 @@
   ...
 }:
 
-let
-  # Use the static copy of niri config from the repo
-  niriBaseConfig = builtins.readFile ../static/niri-config.kdl;
-  
-  # Generate config with debug block appended for VM
-  niriVmConfig = pkgs.writeTextDir "config.kdl" ''
-${niriBaseConfig}
-
-debug {
-    disable-direct-scanout
-}
-'';
-in
 {
-  # Override the niri config for VM only
-  xdg.configFile."niri" = lib.mkForce {
-    source = niriVmConfig;
-    recursive = true;
-  };
+  # VM niri config - now using the same static config as physical host
+  # since virtio GPU with DRM is available (via egl-headless on NVIDIA host)
+  xdg.configFile."niri/config.kdl".source = ../static/niri-config.kdl;
 }

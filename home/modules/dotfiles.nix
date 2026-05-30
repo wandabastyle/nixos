@@ -22,8 +22,8 @@ let
     ) (lib.tail submoduleParts)
   );
 
-  # Filter out systemd and niri (niri is handled separately by VM config)
-  linkableConfigDirs = lib.filter (name: name != "systemd" && name != "niri") allConfigDirs;
+  # Filter out systemd (managed declaratively by Home Manager)
+  linkableConfigDirs = lib.filter (name: name != "systemd") allConfigDirs;
 
   mkConfigLink = name: {
     inherit name;
