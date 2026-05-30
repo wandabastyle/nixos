@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Transfer SSH config and clone dotfiles for NixOS ISO install
+# Transfer SSH config to NixOS ISO for install
 # Run this on your old system targeting the NixOS ISO
 
 set -euo pipefail
@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 SSH_USER="nixos"
 
 # Ask for IP
-echo -e "${YELLOW}Transfer SSH config and dotfiles to NixOS ISO${NC}"
+echo -e "${YELLOW}Transfer SSH config to NixOS ISO${NC}"
 echo ""
 read -rp "Enter the IP address of the NixOS ISO: " NIXOS_IP
 
@@ -45,36 +45,31 @@ ssh "${SSH_USER}@${NIXOS_IP}" '
     echo "SSH config transferred"
 '
 
-echo -e "${GREEN}SSH configuration transferred!${NC}"
+echo -e "${GREEN}✓ SSH configuration transferred!${NC}"
 echo ""
-
-# Clone dotfiles repo
-echo -e "${YELLOW}Cloning dotfiles repo with submodules...${NC}"
-ssh "${SSH_USER}@${NIXOS_IP}" '
-    if [[ ! -d ~/dotfiles ]]; then
-        git clone --recurse-submodules https://github.com/wandabastyle/nixos ~/dotfiles
-        echo "Dotfiles cloned successfully!"
-    else
-        echo "Dotfiles already exists"
-        cd ~/dotfiles
-        git submodule update --init --recursive
-    fi
-    echo "Note: Activation script will copy to /home/kanashi after install"
-'
-
+echo -e "${YELLOW}Next: Clone dotfiles manually on the ISO (requires interactive SSH auth)${NC}"
 echo ""
-echo -e "${GREEN}✓ Setup complete!${NC}"
+echo "Run these commands on the ISO:"
 echo ""
-echo "Next steps on the ISO:"
-echo "  1. cd ~/dotfiles"
-echo "  2. Prep ISO (enable flakes + Cachix):"
+echo "  1. SSH into the ISO:"
+echo "     ssh nixos@${NIXOS_IP}"
+echo ""
+echo "  2. Start SSH agent and add your key (you'll be prompted for passphrase):"
+echo "     eval \"\$(ssh-agent -s)\""
+echo "     ssh-add"
+echo ""
+echo "  3. Clone dotfiles with submodules:"
+echo "     git clone --recurse-submodules https://github.com/wandabastyle/nixos ~/dotfiles"
+echo ""
+echo "  4. Proceed with install:"
+echo "     cd ~/dotfiles"
 echo "     sudo nix --extra-experimental-features 'nix-command flakes' \\"
 echo "       --option extra-substituters 'https://noctalia.cachix.org' \\"
 echo "       --option trusted-public-keys 'noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4=' \\"
 echo "       run github:nix-community/disko -- --mode disko ./hosts/loq15arp9-vm/disko.nix"
-echo "  3. Install: sudo nixos-install --flake .#loq15arp9-vm"
-echo "  4. Set password: sudo nixos-enter; passwd kanashi; exit"
-echo "  5. reboot"
+echo "     sudo nixos-install --flake .#loq15arp9-vm"
+echo "     sudo nixos-enter; passwd kanashi; exit"
+echo "     reboot"
 echo ""
 echo "After first boot, SSH and dotfiles will be in /home/kanashi (via activation script)"
 echo ""
