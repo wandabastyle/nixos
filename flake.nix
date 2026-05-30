@@ -86,7 +86,7 @@
             home-manager.extraSpecialArgs = {
               inherit inputs unstablePkgs;
             };
-            home-manager.users.kanashi = import ./home/kanashi-vm.nix;
+            home-manager.users.kanashi = import ./home/kanashi.nix;
           }
         ];
       };
