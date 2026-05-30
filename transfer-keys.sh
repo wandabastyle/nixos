@@ -163,21 +163,19 @@ REMOTE_CMDS
 fi
 
 # Clone dotfiles repo with submodules if it doesn't exist
-if [[ "$SSH_USER" != "nixos" ]]; then
-    echo -e "${YELLOW}Checking for dotfiles repo...${NC}"
-    ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
-        if [[ ! -d ~/dotfiles ]]; then
-            echo "Cloning dotfiles repo with submodules..."
-            git clone --recurse-submodules https://github.com/wandabastyle/nixos ~/dotfiles
-            echo "Dotfiles cloned successfully!"
-        else
-            echo "Dotfiles repo already exists at ~/dotfiles"
-            cd ~/dotfiles
-            git submodule update --init --recursive
-            echo "Submodules updated!"
-        fi
+echo -e "${YELLOW}Checking for dotfiles repo...${NC}"
+ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
+    if [[ ! -d ~/dotfiles ]]; then
+        echo "Cloning dotfiles repo with submodules..."
+        git clone --recurse-submodules https://github.com/wandabastyle/nixos ~/dotfiles
+        echo "Dotfiles cloned successfully!"
+    else
+        echo "Dotfiles repo already exists at ~/dotfiles"
+        cd ~/dotfiles
+        git submodule update --init --recursive
+        echo "Submodules updated!"
+    fi
 REMOTE_CMDS
-fi
 
 echo ""
 echo -e "${GREEN}✓ All keys transferred and configured successfully!${NC}"
