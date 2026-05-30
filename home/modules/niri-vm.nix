@@ -21,4 +21,9 @@ in
     source = niriVmConfig;
     recursive = true;
   };
+
+  # Symlink noctalia-shell theme for quickshell
+  # Quickshell looks in ~/.config/quickshell/<theme-name>
+  xdg.configFile."quickshell/noctalia-shell".source =
+    config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.nix-profile/share/noctalia-shell";
 }
