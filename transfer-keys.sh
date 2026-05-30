@@ -162,13 +162,15 @@ else
 REMOTE_CMDS
 fi
 
-# Clone dotfiles repo with submodules if it doesn't exist
+# Clone dotfiles repo with submodules if it doesn't exist (for current user)
+# The activation script will copy from nixos user to kanashi user after install
 echo -e "${YELLOW}Checking for dotfiles repo...${NC}"
 ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
     if [[ ! -d ~/dotfiles ]]; then
         echo "Cloning dotfiles repo with submodules..."
         git clone --recurse-submodules https://github.com/wandabastyle/nixos ~/dotfiles
         echo "Dotfiles cloned successfully!"
+        echo "Note: Activation script will copy to kanashi user if installing"
     else
         echo "Dotfiles repo already exists at ~/dotfiles"
         cd ~/dotfiles
