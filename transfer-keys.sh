@@ -86,16 +86,17 @@ fi
 # Transfer SSH backup if it exists
 if [[ -d "$SSH_BACKUP_DIR" ]]; then
     echo -e "${YELLOW}Transferring SSH configuration...${NC}"
-    scp -r "$SSH_BACKUP_DIR" "${SSH_USER}@${NIXOS_IP}:~/"
+    # Use .ssh as target directory name directly
+    scp -r "$SSH_BACKUP_DIR/." "${SSH_USER}@${NIXOS_IP}:~/.ssh/"
     
-    # Setup SSH directory on remote
-    echo -e "${YELLOW}Setting up SSH directory on remote...${NC}"
+    # Setup SSH directory permissions on remote
+    echo -e "${YELLOW}Setting up SSH directory permissions on remote...${NC}"
     ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
-        if [[ -d ~/ssh-backup ]]; then
-            mv ~/ssh-backup ~/.ssh
+        if [[ -d ~/.ssh ]]; then
             chmod 700 ~/.ssh
             chmod 600 ~/.ssh/id_* 2>/dev/null || true
             echo "SSH config restored successfully"
+            ls -la ~/.ssh/ | head -10
         fi
         
         # Configure git credential helper if git is available
