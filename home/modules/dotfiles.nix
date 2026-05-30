@@ -8,7 +8,7 @@
 let
   dotfilesRepo = "${config.home.homeDirectory}/dotfiles";
 
-  gitmodulesContent = builtins.readFile ../.gitmodules;
+  gitmodulesContent = builtins.readFile ../../.gitmodules;
   submoduleParts = lib.splitString "[submodule \".config/" gitmodulesContent;
   allConfigDirs = lib.filter (n: n != null && n != "") (
     map (
