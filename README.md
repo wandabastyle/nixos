@@ -151,11 +151,25 @@ sudo nixos-install --flake .#loq15arp9
 
 ### Set User Password
 
-Set the `kanashi` password before rebooting. No password is stored in this repo.
+Set the `kanashi` password and copy dotfiles/SSH to the user's home before rebooting.
 
 ```sh
 sudo nixos-enter
 passwd kanashi
+
+# Copy dotfiles repo from nixos user to kanashi
+mkdir -p /home/kanashi
+cp -r /home/nixos/dotfiles /home/kanashi/
+chown -R kanashi:users /home/kanashi/dotfiles
+
+# Copy SSH config if it exists
+if [[ -d /home/nixos/.ssh ]]; then
+    cp -r /home/nixos/.ssh /home/kanashi/
+    chown -R kanashi:users /home/kanashi/.ssh
+    chmod 700 /home/kanashi/.ssh
+    chmod 600 /home/kanashi/.ssh/id_* 2>/dev/null || true
+fi
+
 exit
 ```
 
@@ -168,6 +182,8 @@ reboot
 ## After First Boot
 
 Log in through SDDM as `kanashi`.
+
+The dotfiles and SSH config should already be copied (see install step above). If not, see below.
 
 ### Transfer Keys (Automated)
 
