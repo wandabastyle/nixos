@@ -5,9 +5,6 @@
   ...
 }:
 
-let
-  sddmTokyoNight = pkgs.callPackage ../../pkgs/sddm-tokyo-night { };
-in
 {
   # Shared NixOS configuration for loq15arp9 hosts
 
@@ -65,15 +62,19 @@ in
   programs.niri.enable = true;
 
   hardware.graphics.enable = true;
+  hardware.graphics.enable32Bit = true;
 
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;
     theme = "tokyo-night-sddm";
-    extraPackages = [
-      pkgs.kdePackages.qt5compat
-      sddmTokyoNight
-    ];
+    extraPackages = [ pkgs.kdePackages.qt5compat ];
+    package = pkgs.kdePackages.sddm.overrideAttrs (old: {
+      postInstall = (old.postInstall or "") + ''
+        mkdir -p $out/share/sddm/themes/tokyo-night-sddm
+        cp -r ${../../assets/sddm/tokyo-night-sddm}/* $out/share/sddm/themes/tokyo-night-sddm
+      '';
+    });
   };
 
   services.pipewire = {
@@ -132,6 +133,7 @@ in
     xdg-utils
     jetbrains-mono
     nerd-fonts.jetbrains-mono
+    mesa
   ];
 
   fonts.packages = with pkgs; [
