@@ -98,6 +98,13 @@ in
   services.gvfs.enable = true;
   services.udisks2.enable = true;
 
+  # SSH server for remote access
+  services.openssh = {
+    enable = true;
+    settings.PermitRootLogin = "no";
+    settings.PasswordAuthentication = false;
+  };
+
   zramSwap = {
     enable = true;
     memoryPercent = 100;
@@ -134,31 +141,4 @@ in
   ];
 
   system.stateVersion = "25.11";
-
-  # Copy dotfiles and SSH from nixos user (ISO) to kanashi on first boot
-  system.activationScripts.copyUserData = {
-    deps = [ "users" ];
-    text = ''
-      # Only run if dotfiles exist in nixos home but not in kanashi home
-      if [[ -d /home/nixos/dotfiles ]] && [[ ! -d /home/kanashi/dotfiles ]]; then
-        echo "Copying dotfiles from /home/nixos to /home/kanashi..."
-        mkdir -p /home/kanashi
-        cp -r /home/nixos/dotfiles /home/kanashi/
-        chown -R kanashi:users /home/kanashi/dotfiles
-      fi
-
-      # Copy SSH config if it exists
-      if [[ -d /home/nixos/.ssh ]] && [[ ! -d /home/kanashi/.ssh ]]; then
-        echo "Copying SSH config from /home/nixos to /home/kanashi..."
-        mkdir -p /home/kanashi
-        cp -r /home/nixos/.ssh /home/kanashi/
-        chown -R kanashi:users /home/kanashi/.ssh
-        chmod 700 /home/kanashi/.ssh
-        chmod 600 /home/kanashi/.ssh/id_* 2>/dev/null || true
-        chmod 644 /home/kanashi/.ssh/*.pub 2>/dev/null || true
-        chmod 644 /home/kanashi/.ssh/config 2>/dev/null || true
-        chmod 644 /home/kanashi/.ssh/known_hosts 2>/dev/null || true
-      fi
-    '';
-  };
 }

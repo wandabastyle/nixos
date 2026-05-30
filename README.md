@@ -149,27 +149,24 @@ sudo nix --extra-experimental-features "nix-command flakes" \
 sudo nixos-install --flake .#loq15arp9
 ```
 
-### Set User Password
+### Copy Dotfiles and SSH
 
-Set the `kanashi` password and copy dotfiles/SSH to the user's home before rebooting.
+After `nixos-install`, copy dotfiles and SSH config from the ISO to the installed system:
+
+```sh
+sudo mkdir -p /mnt/home/kanashi
+sudo cp -r ~/dotfiles /mnt/home/kanashi/
+sudo cp -r ~/.ssh /mnt/home/kanashi/
+sudo chown -R 1000:100 /mnt/home/kanashi/dotfiles /mnt/home/kanashi/.ssh
+sudo chmod 700 /mnt/home/kanashi/.ssh
+sudo chmod 600 /mnt/home/kanashi/.ssh/id_* 2>/dev/null || true
+```
+
+### Set User Password
 
 ```sh
 sudo nixos-enter
 passwd kanashi
-
-# Copy dotfiles repo from nixos user to kanashi
-mkdir -p /home/kanashi
-cp -r /home/nixos/dotfiles /home/kanashi/
-chown -R kanashi:users /home/kanashi/dotfiles
-
-# Copy SSH config if it exists
-if [[ -d /home/nixos/.ssh ]]; then
-    cp -r /home/nixos/.ssh /home/kanashi/
-    chown -R kanashi:users /home/kanashi/.ssh
-    chmod 700 /home/kanashi/.ssh
-    chmod 600 /home/kanashi/.ssh/id_* 2>/dev/null || true
-fi
-
 exit
 ```
 
