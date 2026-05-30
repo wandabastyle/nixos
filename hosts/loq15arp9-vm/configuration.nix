@@ -11,7 +11,7 @@ let
 in
 {
   imports = [
-    ../loq15arp9/hardware-configuration.nix
+    ./hardware-configuration.nix
     ./disko.nix
   ];
 
