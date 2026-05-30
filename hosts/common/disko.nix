@@ -1,9 +1,13 @@
+# Common disko configuration for loq15arp9 hosts
+# Usage: import with device path: (import ../common/disko.nix { device = "/dev/nvme0n1"; })
+
+{ device }:
+
 {
   disko.devices = {
     disk.main = {
       type = "disk";
-      # VM disk - typically vda for virtio or sda for SATA
-      device = "/dev/vda";
+      inherit device;
       content = {
         type = "gpt";
         partitions = {
@@ -39,6 +43,7 @@
                   mountOptions = [
                     "compress=zstd"
                     "noatime"
+                    "ssd"
                     "discard=async"
                   ];
                 };
@@ -47,6 +52,7 @@
                   mountOptions = [
                     "compress=zstd"
                     "noatime"
+                    "ssd"
                     "discard=async"
                   ];
                 };
@@ -55,6 +61,7 @@
                   mountOptions = [
                     "compress=zstd"
                     "noatime"
+                    "ssd"
                     "discard=async"
                   ];
                 };
@@ -63,6 +70,7 @@
                   mountOptions = [
                     "compress=zstd"
                     "noatime"
+                    "ssd"
                     "discard=async"
                   ];
                 };
