@@ -70,7 +70,10 @@ in
     enable = true;
     wayland.enable = true;
     theme = "tokyo-night-sddm";
-    extraPackages = [ pkgs.kdePackages.qt5compat ];
+    extraPackages = [
+      pkgs.kdePackages.qt5compat
+      sddmTokyoNight
+    ];
   };
 
   services.pipewire = {
@@ -116,7 +119,6 @@ in
   };
 
   environment.systemPackages = with pkgs; [
-    sddmTokyoNight
     alsa-utils
     git
     vim
