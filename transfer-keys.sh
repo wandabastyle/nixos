@@ -162,6 +162,23 @@ else
 REMOTE_CMDS
 fi
 
+# Clone dotfiles repo with submodules if it doesn't exist
+if [[ "$SSH_USER" != "nixos" ]]; then
+    echo -e "${YELLOW}Checking for dotfiles repo...${NC}"
+    ssh "${SSH_USER}@${NIXOS_IP}" << 'REMOTE_CMDS'
+        if [[ ! -d ~/dotfiles ]]; then
+            echo "Cloning dotfiles repo with submodules..."
+            git clone --recurse-submodules https://github.com/wandabastyle/nixos ~/dotfiles
+            echo "Dotfiles cloned successfully!"
+        else
+            echo "Dotfiles repo already exists at ~/dotfiles"
+            cd ~/dotfiles
+            git submodule update --init --recursive
+            echo "Submodules updated!"
+        fi
+REMOTE_CMDS
+fi
+
 echo ""
 echo -e "${GREEN}✓ All keys transferred and configured successfully!${NC}"
 echo ""
@@ -169,7 +186,6 @@ echo "Next steps:"
 echo "  1. Clone your password store:"
 echo "     git clone git@github.com:your-user/pass-store ~/.password-store"
 echo ""
-echo "  2. Clone/update dotfiles submodules if needed:"
-echo "     cd ~/dotfiles"
-echo "     git submodule update --init --recursive"
+echo "  2. Rebuild NixOS if needed:"
+echo "     sudo nixos-rebuild switch --flake ~/dotfiles#loq15arp9"
 echo ""
