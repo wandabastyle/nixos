@@ -5,25 +5,13 @@
   ...
 }:
 
-let
-  niriVmConfig = pkgs.runCommand "niri-vm-config" { } ''
-    mkdir -p $out
-    cp -r ${../../.config/niri}/* $out/
-    chmod -R u+w $out
-    
-    # Append the debug block to disable direct scanout in VMs
-    cat >> $out/config.kdl <<'EOF'
+{
+  # For VM: Append debug block to disable direct scanout
+  # This works by using home.file instead of copying the submodule
+  home.file.".config/niri/config.kdl".text = lib.mkAfter ''
 
 debug {
     disable-direct-scanout
 }
-EOF
-  '';
-in
-{
-  # Override the niri config to use the generated one with debug options
-  xdg.configFile."niri" = lib.mkForce {
-    source = niriVmConfig;
-    recursive = true;
-  };
+'';
 }
