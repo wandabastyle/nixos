@@ -86,7 +86,8 @@ fi
 # Transfer SSH backup if it exists
 if [[ -d "$SSH_BACKUP_DIR" ]]; then
     echo -e "${YELLOW}Transferring SSH configuration...${NC}"
-    # Use .ssh as target directory name directly
+    # Create .ssh directory first, then copy contents
+    ssh "${SSH_USER}@${NIXOS_IP}" "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
     scp -r "$SSH_BACKUP_DIR/." "${SSH_USER}@${NIXOS_IP}:~/.ssh/"
     
     # Setup SSH directory permissions on remote
