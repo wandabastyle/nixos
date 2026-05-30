@@ -83,12 +83,11 @@ if [[ "$SSH_USER" != "nixos" ]]; then
     echo ""
 fi
 
-# Transfer SSH backup if it exists
-if [[ -d "$SSH_BACKUP_DIR" ]]; then
-    echo -e "${YELLOW}Transferring SSH configuration...${NC}"
-    # Create .ssh directory first, then copy contents
-    ssh "${SSH_USER}@${NIXOS_IP}" "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
-    scp -r "$SSH_BACKUP_DIR/." "${SSH_USER}@${NIXOS_IP}:~/.ssh/"
+# Transfer SSH config directly from ~/.ssh on host
+if [[ -d "$HOME/.ssh" ]]; then
+    echo -e "${YELLOW}Transferring SSH configuration from ~/.ssh...${NC}"
+    # Copy entire ~/.ssh directory directly to remote
+    scp -r "$HOME/.ssh/" "${SSH_USER}@${NIXOS_IP}:~/"
     
     # Setup SSH directory permissions on remote
     echo -e "${YELLOW}Setting up SSH directory permissions on remote...${NC}"
@@ -96,8 +95,13 @@ if [[ -d "$SSH_BACKUP_DIR" ]]; then
         if [[ -d ~/.ssh ]]; then
             chmod 700 ~/.ssh
             chmod 600 ~/.ssh/id_* 2>/dev/null || true
+            chmod 644 ~/.ssh/*.pub 2>/dev/null || true
+            chmod 644 ~/.ssh/config 2>/dev/null || true
+            chmod 644 ~/.ssh/known_hosts 2>/dev/null || true
+            chmod 644 ~/.ssh/authorized_keys 2>/dev/null || true
             echo "SSH config restored successfully"
-            ls -la ~/.ssh/ | head -10
+            echo "Files in ~/.ssh:"
+            ls -la ~/.ssh/ | head -20
         fi
         
         # Configure git credential helper if git is available
