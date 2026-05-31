@@ -49,6 +49,13 @@ in
     ollamaPackage
   ];
 
+  # Provide quickshell config path for qs -c noctalia-shell compatibility
+  # This matches Arch-style where ~/.config/quickshell/noctalia-shell contains the shell.qml
+  xdg.configFile."quickshell/noctalia-shell" = {
+    source = "${noctaliaShell}/share/noctalia-shell";
+    recursive = true;
+  };
+
   systemd.user.services.nirinit = {
     Unit = {
       Description = "nirinit session restore for niri";
